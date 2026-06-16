@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "./ui/button";
+import DotField from "./DotField";
 
 const TERMINAL_LINES = [
   { prompt: true, text: "whoami" },
   { prompt: false, text: "Malcom OGOUBY-D. — développeur full-stack" },
   { prompt: true, text: "cat about.json" },
-  { prompt: false, text: '{ "année": "Bachelor 3", "école": "IUT Informatique",' },
+  { prompt: false, text: '{ "études": "Ba3 - Sciences Informatiques", ' },
+  { prompt: false, text: '  "école": "Université Libre de Bruxelles, Belgique", ' },
   { prompt: false, text: '  "dispo": "missions freelance & stage" }' },
   { prompt: true, text: "ls projets/" },
-  { prompt: false, text: "TaskFlow/  DevBlog-API/  DataViz/  WeatherCLI/" },
+  { prompt: false, text: "LoveTap/  Site e-commerce/  Bugémon/" },
   { prompt: true, text: 'echo "Disponible pour collaborer 🚀"' },
   { prompt: false, text: "Disponible pour collaborer 🚀" },
 ];
@@ -37,14 +39,16 @@ export function Hero() {
       className="relative min-h-screen flex items-center pt-16 overflow-hidden"
     >
       {/* dot grid bg */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, color-mix(in oklch, var(--primary) 18%, transparent) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
+      <div className="absolute inset-0 pointer-events-none">
+        <DotField
+          dotRadius={1.5}
+          dotSpacing={14}
+          bulgeStrength={67}
+          glowRadius={160}
+          sparkle={false}
+          waveAmplitude={0}
+        />
+      </div>
       {/* gradient fade at bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 

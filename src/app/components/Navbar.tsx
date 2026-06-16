@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Menu, X, Terminal } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { Button } from "./ui/button";
+import { Terminal } from "lucide-react";
+import { motion, AnimatePresence, type Variants } from "motion/react";
 
 const NAV_LINKS = [
   { label: "Accueil", href: "#home" },
@@ -11,14 +10,25 @@ const NAV_LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-type NavbarProps = {
-  isDark: boolean;
-  onToggle: () => void;
+const listVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    transition: { when: "afterChildren", staggerChildren: 0.04, staggerDirection: -1 },
+  },
+  visible: {
+    opacity: 1,
+    transition: { when: "beforeChildren", staggerChildren: 0.06 },
+  },
 };
 
-export function Navbar({ isDark, onToggle }: NavbarProps) {
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: -8 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 26 } },
+};
+
+export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -26,7 +36,14 @@ export function Navbar({ isDark, onToggle }: NavbarProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleNavClick = () => setMenuOpen(false);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <header
@@ -37,84 +54,57 @@ export function Navbar({ isDark, onToggle }: NavbarProps) {
       }`}
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a
-          href="#home"
-          className="flex items-center gap-2 group"
-          aria-label="Accueil"
-        >
-          <Terminal
-            size={18}
-            className="text-primary transition-transform duration-200 group-hover:rotate-12"
-          />
-          <span
-            className="font-display text-lg font-semibold text-foreground tracking-tight"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            Malcom<span className="text-primary">.</span>dev
-          </span>
-        </a>
-
-        <ul className="hidden md:flex items-center gap-1">
-          {NAV_LINKS.map((link) => (
-            <li key={link.label}>
-              <a
-                href={link.href}
-                className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggle}
-            aria-label={isDark ? "Mode clair" : "Mode sombre"}
-            className="text-muted-foreground hover:text-foreground"
+          <motion.button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            animate={{ rotate: open ? 135 : 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 18 }}
+            whileTap={{ scale: 0.9 }}
+            aria-label={open ? "Masquer le menu" : "Afficher le menu"}
+            aria-expanded={open}
+            className="p-1.5 -ml-1.5 rounded-md text-primary hover:bg-secondary transition-colors"
           >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-muted-foreground hover:text-foreground"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            <Terminal size={18} />
+          </motion.button>
+          <a
+            href="#home"
+            className="flex items-center gap-2 group"
+            aria-label="Accueil"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </Button>
+            <span
+              className="font-display text-lg font-semibold text-foreground tracking-tight"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              Malcom<span className="text-primary">.</span>dev
+            </span>
+          </a>
         </div>
-      </nav>
 
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden bg-background/95 backdrop-blur-md border-b border-border"
-          >
-            <ul className="px-6 py-5 flex flex-col gap-1">
+        <AnimatePresence>
+          {open && (
+            <motion.ul
+              variants={listVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="flex items-center gap-1 flex-wrap justify-end"
+            >
               {NAV_LINKS.map((link) => (
-                <li key={link.label}>
+                <motion.li key={link.label} variants={itemVariants}>
                   <a
                     href={link.href}
-                    onClick={handleNavClick}
-                    className="block px-3 py-2.5 rounded-md text-base text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-150"
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
                   >
                     {link.label}
                   </a>
-                </li>
+                </motion.li>
               ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </nav>
     </header>
   );
 }
