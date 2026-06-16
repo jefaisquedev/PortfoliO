@@ -47,7 +47,7 @@ function ProjectCard({ project, onOpen }: { project: Project; onOpen: () => void
           src={project.image}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          style={{ filter: "saturate(0.85)" }}
+          style={{ filter: "saturate(0.85)", objectPosition: project.imagePosition ?? "center" }}
         />
         <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/60 transition-all duration-300 flex items-center justify-center gap-3">
           <motion.div

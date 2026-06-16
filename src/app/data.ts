@@ -1,3 +1,5 @@
+import lovetap from "./assets/LoveTap.png";
+
 export type ProjectCategory = "Web" | "Mobile" | "CLI" | "API";
 
 export type Project = {
@@ -7,6 +9,7 @@ export type Project = {
   category: ProjectCategory;
   tags: string[];
   image: string;
+  imagePosition?: string;
   shortDesc: string;
   fullDesc: string;
   problem: string;
@@ -22,7 +25,8 @@ export const projects: Project[] = [
     subtitle: "Application de gestion relationnelle temps-réel",
     category: "Web",
     tags: ["React", "Node.js", "PrismaORM", "Redis", "JWT Auth", "Docker"],
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=480&fit=crop&auto=format",
+    image: lovetap,
+    imagePosition: "center 20%",
     shortDesc: "Application web temps-réel de gestion de tâches en équipe avec tableaux Kanban et drag-and-drop.",
     fullDesc: "LoveTap est une application web pensée mobile collaborative permettant à deux personnes d'intéragir en temps réel à l'aide de différents outils implémentés. Capsules temporelles avec ouverture programmée, partage d'humeur, liaison âme-soeur. Interface pensée pour la mise en relation éfficace et faciliter les échanges.",
     problem: "Ce projet ne répond pas forcément à un besoin réel mais a été conçu pour expérimenter la mise en place d'une application web temps-réel avec une architecture moderne et scalable.",
@@ -32,9 +36,9 @@ export const projects: Project[] = [
   },
   {
     id: 2,
-    title: "WeatherCLI",
-    subtitle: "Outil météo en ligne de commande",
-    category: "CLI",
+    title: "Site e-commerce",
+    subtitle: "Outil de vente en ligne",
+    category: "Web",
     tags: ["Python", "Click", "OpenWeatherMap"],
     image: "https://images.unsplash.com/photo-1601134467661-3d775b999c5b?w=800&h=480&fit=crop&auto=format",
     shortDesc: "Script Python affichant météo actuelle et prévisions 7 jours en terminal avec coloration syntaxique.",

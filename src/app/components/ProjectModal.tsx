@@ -34,7 +34,7 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
             src={project.image}
             alt={project.title}
             className="w-full h-full object-cover"
-            style={{ filter: "saturate(0.8)" }}
+            style={{ filter: "saturate(0.8)", objectPosition: project.imagePosition ?? "center" }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           <button

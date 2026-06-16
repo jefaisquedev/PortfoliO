@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { GraduationCap, University, Code2 } from "lucide-react";
 import { Badge } from "./ui/badge";
-import monImgage from "../components/pics/me.jpg";
+import monImage from "../assets/me.jpg";
 
 
 const PARCOURS = [
@@ -74,7 +74,7 @@ export function About() {
                   style={{ aspectRatio: "4/5" }}
                 >
                   <img
-                    src={monImgage}
+                    src={monImage}
                     alt="Portrait de Malcom OGOUBY-D."
                     className="w-full h-full object-cover"
                     style={{ filter: "saturate(0.85)" }}
