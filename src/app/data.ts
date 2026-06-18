@@ -1,6 +1,6 @@
 import lovetap from "./assets/LoveTap.png";
 
-export type ProjectCategory = "Web" | "Mobile" | "CLI" | "API";
+export type ProjectCategory = "Web" | "Mobile" | "CLI" | "API" | "Application";
 
 export type Project = {
   id: number;
@@ -16,6 +16,8 @@ export type Project = {
   tech: string[];
   demo: string;
   github: string;
+  /** Lien direct vers le projet. Si renseigné, un clic sur la carte ouvre ce lien. */
+  link?: string;
 };
 
 export const projects: Project[] = [
@@ -29,31 +31,31 @@ export const projects: Project[] = [
     imagePosition: "center 20%",
     shortDesc: "Application web temps-réel de gestion de tâches en équipe avec tableaux Kanban et drag-and-drop.",
     fullDesc: "LoveTap est une application web pensée mobile collaborative permettant à deux personnes d'intéragir en temps réel à l'aide de différents outils implémentés. Capsules temporelles avec ouverture programmée, partage d'humeur, liaison âme-soeur. Interface pensée pour la mise en relation éfficace et faciliter les échanges.",
-    problem: "Ce projet ne répond pas forcément à un besoin réel mais a été conçu pour expérimenter la mise en place d'une application web temps-réel avec une architecture moderne et scalable.",
-    tech: ["React 18", "Node.js", "Express", "PrismaORM", "Redis", "Socket.io", "JWT Auth", "Docker"],
+    problem: "J'ai conçu ce projet pour expérimenter la mise en place d'une application web temps-réel avec une architecture moderne et scalable.",
+    tech: ["React 18", "Node.js", "Express", "PrismaORM", "Redis", "JWT Auth", "Docker"],
     demo: "#",
     github: "#",
   },
   {
     id: 2,
     title: "Site e-commerce",
-    subtitle: "Outil de vente en ligne",
+    subtitle: "Site vitrine pour la vente en ligne",
     category: "Web",
-    tags: ["Python", "Click", "OpenWeatherMap"],
+    tags: ["HTML", "CSS", "JavaScript", "PHP", "MySQL"],
     image: "https://images.unsplash.com/photo-1601134467661-3d775b999c5b?w=800&h=480&fit=crop&auto=format",
-    shortDesc: "Script Python affichant météo actuelle et prévisions 7 jours en terminal avec coloration syntaxique.",
-    fullDesc: "WeatherCLI est un outil en ligne de commande développé en Python qui affiche la météo actuelle, les prévisions sur 7 jours, des graphiques ASCII et des alertes météo en temps réel. Interface terminal colorée via la bibliothèque Rich, données issues de l'API OpenWeatherMap.",
-    problem: "Besoin d'un accès rapide aux données météo sans quitter le terminal lors d'une session de développement, sans surcharge d'une application graphique.",
+    shortDesc: "Site vitrine pour la vente en ligne.",
+    fullDesc: "Site vitrine pour la vente en ligne.",
+    problem: "Besoin d'un site vitrine pour la vente en ligne.",
     tech: ["Python 3.11", "Click", "Rich", "OpenWeatherMap API", "Requests", "pytest", "pip"],
     demo: "#",
     github: "#",
   },
   {
     id: 3,
-    title: "DevBlog API",
-    subtitle: "API RESTful pour blog de développeur",
-    category: "API",
-    tags: ["Express", "PostgreSQL", "Docker", "JWT"],
+    title: "Bugémon",
+    subtitle: "Projet de fin d'année de ma 3ème année de bachelier",
+    category: "Application",
+    tags: ["JavaScript", "Maven", "PostgreSQL", "Docker", "JWT"],
     image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=480&fit=crop&auto=format",
     shortDesc: "Backend complet avec authentification JWT, CRUD articles, commentaires et upload de fichiers.",
     fullDesc: "DevBlog API est une API RESTful robuste exposant des endpoints pour gérer articles, commentaires, tags, et utilisateurs. Authentification JWT avec refresh tokens, upload d'images via Multer, pagination cursor-based, mise en cache Redis et documentation Swagger complète.",
@@ -138,5 +140,3 @@ export const skillCategories = [
     ],
   },
 ];
-
-export const ALL_CATEGORIES: Array<"Tous" | ProjectCategory> = ["Tous", "Web", "API", "Mobile", "CLI"];

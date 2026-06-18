@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Terminal } from "lucide-react";
-import { motion, AnimatePresence, type Variants } from "motion/react";
+import { motion, AnimatePresence, useAnimationControls, type Variants } from "motion/react";
 
 const NAV_LINKS = [
   { label: "Accueil", href: "#home" },
@@ -29,12 +29,24 @@ const itemVariants: Variants = {
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const shakeControls = useAnimationControls();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (open) return;
+    const interval = setInterval(() => {
+      shakeControls.start({
+        rotate: [0, -14, 14, -10, 10, -5, 5, 0],
+        transition: { duration: 0.6, ease: "easeInOut" },
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [open, shakeControls]);
 
   useEffect(() => {
     if (!open) return;
@@ -54,7 +66,7 @@ export function Navbar() {
       }`}
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <motion.button
             type="button"
             onClick={() => setOpen((o) => !o)}
@@ -63,9 +75,11 @@ export function Navbar() {
             whileTap={{ scale: 0.9 }}
             aria-label={open ? "Masquer le menu" : "Afficher le menu"}
             aria-expanded={open}
-            className="p-1.5 -ml-1.5 rounded-md text-primary hover:bg-secondary transition-colors"
+            className="flex items-center justify-center p-1.5 -ml-1.5 rounded-md text-primary hover:bg-secondary transition-colors"
           >
-            <Terminal size={18} />
+            <motion.span animate={shakeControls} className="flex items-center justify-center">
+              <Terminal size={18} />
+            </motion.span>
           </motion.button>
           <a
             href="#home"

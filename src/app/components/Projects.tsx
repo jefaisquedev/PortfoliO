@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { ExternalLink, Github, Eye } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { projects, ALL_CATEGORIES, type Project, type ProjectCategory } from "../data";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { useMouseTrack } from "../hooks/useMouseTrack";
+import { useMemo, useCallback, type MouseEvent } from "react";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { motion } from "motion/react";
+import { projects, type Project } from "../data";
+import { LogoLoop, type LogoItem } from "./LogoLoop";
 
 type ProjectsProps = {
   onSelectProject: (p: Project) => void;
@@ -18,129 +16,110 @@ const fadeUp = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Web: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  API: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-  Mobile: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-  CLI: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+  Web: "text-blue-400 border-blue-400/35",
+  API: "text-emerald-400 border-emerald-400/35",
+  Mobile: "text-purple-400 border-purple-400/35",
+  CLI: "text-orange-400 border-orange-400/35",
+  Application: "text-amber-400 border-amber-400/35",
 };
 
-function ProjectCard({ project, onOpen }: { project: Project; onOpen: () => void }) {
-  const { ref, mouse } = useMouseTrack();
+function projectUrl(project: Project): string | undefined {
+  if (project.link && project.link !== "#") return project.link;
+  if (project.demo && project.demo !== "#") return project.demo;
+  return undefined;
+}
+
+function LoopProjectCard({ project, onOpen }: { project: Project; onOpen: () => void }) {
+  const url = projectUrl(project);
+
+  const handleOpenDetails = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    onOpen();
+  };
 
   return (
-    <motion.article
-      ref={ref}
-      layout
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.94 }}
-      transition={{ duration: 0.3 }}
-      className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/30 hover:shadow-xl transition-all duration-300"
-      style={{
-        background: `linear-gradient(135deg, var(--card) 0%, var(--card) 100%), radial-gradient(circle at ${mouse.x}px ${mouse.y}px, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 35%)`,
-        backgroundBlendMode: "overlay",
-      }}
+    <article
+      className="group relative flex flex-col w-[300px] h-[340px] max-w-[82vw] liquid-glass liquid-glass-panel liquid-glass-interactive rounded-2xl overflow-hidden text-left"
     >
-      {/* image */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
+      {/* ── Visuel ── */}
+      <div className="relative shrink-0 overflow-hidden border-b border-border" style={{ aspectRatio: "16/9" }}>
         <img
           src={project.image}
           alt={project.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          style={{ filter: "saturate(0.85)", objectPosition: project.imagePosition ?? "center" }}
+          className="transition-transform duration-500 group-hover:scale-105"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: project.imagePosition ?? "center",
+            filter: "saturate(0.85)",
+          }}
+          draggable={false}
         />
-        <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/60 transition-all duration-300 flex items-center justify-center gap-3">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileHover={{ y: 0 }}
-            className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-200"
-          >
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={onOpen}
-              className="gap-1.5"
-            >
-              <Eye size={14} />
-              Détails
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              asChild
-              className="gap-1.5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                <ExternalLink size={14} />
-                Demo
-              </a>
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              asChild
-              className="gap-1.5"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <a href={project.github} target="_blank" rel="noopener noreferrer">
-                <Github size={14} />
-                Code
-              </a>
-            </Button>
-          </motion.div>
-        </div>
-        {/* category badge */}
         <div className="absolute top-3 left-3">
           <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-display font-medium ${CATEGORY_COLORS[project.category]}`}
+            className={`liquid-glass-sm inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-display font-medium ${CATEGORY_COLORS[project.category] ?? CATEGORY_COLORS.Web}`}
           >
             {project.category}
           </span>
         </div>
+        {url && (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-3 right-3 p-1.5 rounded-full liquid-glass-sm text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={`Ouvrir ${project.title} dans un nouvel onglet`}
+          >
+            <ExternalLink size={14} />
+          </a>
+        )}
       </div>
 
-      {/* content */}
-      <div className="flex flex-col gap-3 p-5 flex-1">
-        <div>
-          <h3
-            className="font-display"
-            style={{ fontSize: "1.05rem", fontWeight: 600, letterSpacing: "-0.01em" }}
-          >
-            {project.title}
-          </h3>
-          <p
-            className="text-muted-foreground mt-0.5"
-            style={{ fontSize: "0.82rem" }}
-          >
-            {project.subtitle}
-          </p>
-        </div>
-        <p
-          className="text-muted-foreground"
-          style={{ fontSize: "0.85rem", lineHeight: 1.65 }}
+      {/* ── Identité ── */}
+      <div className="flex flex-col gap-1 px-5 pt-4 pb-3 border-b border-border min-h-[5.5rem]">
+        <h3
+          className="font-display line-clamp-1"
+          style={{ fontSize: "1.05rem", fontWeight: 600, letterSpacing: "-0.01em" }}
         >
-          {project.shortDesc}
+          {project.title}
+        </h3>
+        <p
+          className="text-muted-foreground line-clamp-2"
+          style={{ fontSize: "0.82rem", lineHeight: 1.5 }}
+        >
+          {project.subtitle}
         </p>
-        <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
-          {project.tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="font-display" style={{ fontSize: "0.72rem" }}>
-              {tag}
-            </Badge>
-          ))}
-        </div>
       </div>
-    </motion.article>
+
+      {/* ── Action ── */}
+      <button
+        type="button"
+        onClick={handleOpenDetails}
+        className="mt-auto flex items-center justify-between gap-2 px-5 py-4 w-full font-display text-primary hover:bg-primary/5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
+        style={{ fontSize: "0.82rem", letterSpacing: "0.04em" }}
+      >
+        <span>Lire plus</span>
+        <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+      </button>
+    </article>
   );
 }
 
 export function Projects({ onSelectProject }: ProjectsProps) {
-  const [activeFilter, setActiveFilter] = useState<"Tous" | ProjectCategory>("Tous");
+  const logos = useMemo<LogoItem[]>(
+    () => projects.map((p) => ({ project: p })),
+    [],
+  );
 
-  const filtered =
-    activeFilter === "Tous"
-      ? projects
-      : projects.filter((p) => p.category === activeFilter);
+  const renderItem = useCallback(
+    (item: LogoItem) => {
+      const project = item.project as Project;
+      return <LoopProjectCard project={project} onOpen={() => onSelectProject(project)} />;
+    },
+    [onSelectProject],
+  );
 
   return (
     <section id="projects" className="py-24 sm:py-32">
@@ -164,55 +143,28 @@ export function Projects({ onSelectProject }: ProjectsProps) {
             Ce que j'ai construit
           </h2>
           <p className="text-muted-foreground mt-3 max-w-lg" style={{ lineHeight: 1.7 }}>
-            Un aperçu de mes projets personnels, académiques et freelance. Cliquez sur
-            une carte pour voir les détails complets.
+            Un aperçu de mes projets personnels, académiques et freelance.
           </p>
         </motion.div>
-
-        {/* Filters */}
-        <motion.div
-          {...fadeUp}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="flex flex-wrap gap-2 mb-10"
-        >
-          {ALL_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveFilter(cat as "Tous" | ProjectCategory)}
-              className={`px-4 py-2 rounded-full border font-display transition-all duration-200 ${
-                activeFilter === cat
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40"
-              }`}
-              style={{ fontSize: "0.82rem" }}
-            >
-              {cat}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Grid */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          <AnimatePresence mode="popLayout">
-            {filtered.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onOpen={() => onSelectProject(project)}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-muted-foreground">
-            Aucun projet dans cette catégorie.
-          </div>
-        )}
       </div>
+
+      {/* Looping carousel — full-bleed so cards scroll edge to edge */}
+      <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.15 }}>
+        <LogoLoop
+          logos={logos}
+          renderItem={renderItem}
+          speed={45}
+          direction="left"
+          gap={24}
+          logoHeight={28}
+          hoverSpeed={0}
+          fadeOut
+          fadeOutColor="var(--background)"
+          ariaLabel="Carrousel des projets"
+          className="py-3"
+          style={{ overflow: "hidden" }}
+        />
+      </motion.div>
     </section>
   );
 }

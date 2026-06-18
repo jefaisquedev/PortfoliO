@@ -165,41 +165,6 @@
   }
 }
 
-@keyframes ambient-float {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  50% {
-    transform: translate3d(0, -14px, 0) scale(1.02);
-  }
-
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes ambient-drift {
-  0% {
-    background-position: 0 0, 0 0, 0 0;
-  }
-
-  100% {
-    background-position: 120px 0, 0 120px, 0 0;
-  }
-}
-
-@keyframes ambient-pulse {
-  0%,
-  100% {
-    opacity: 0.22;
-  }
-
-  50% {
-    opacity: 0.38;
-  }
-}
-
 @keyframes cursor-blink {
   0%,
   49% {
@@ -211,35 +176,6 @@
   100% {
     opacity: 0;
     transform: scaleY(1);
-  }
-}
-
-@keyframes cursor-glow {
-  0%,
-  49% {
-    box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.8), 0 0 6px 2px rgba(168, 85, 247, 0.4);
-  }
-
-  50%,
-  100% {
-    box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.2), 0 0 2px 1px rgba(168, 85, 247, 0.1);
-  }
-}
-
-@keyframes underline-draw {
-  0% {
-    width: 0;
-    opacity: 0;
-  }
-
-  80% {
-    width: 100%;
-    opacity: 1;
-  }
-
-  100% {
-    width: 100%;
-    opacity: 1;
   }
 }
 

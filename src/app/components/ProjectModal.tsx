@@ -27,35 +27,37 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
 
   return (
     <Dialog open={!!project} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-        {/* Header image */}
-        <div className="relative overflow-hidden rounded-t-lg" style={{ aspectRatio: "16/7" }}>
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-full object-cover"
-            style={{ filter: "saturate(0.8)", objectPosition: project.imagePosition ?? "center" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Fermer"
-          >
-            <X size={16} />
-          </button>
-          <div className="absolute bottom-4 left-6">
+      <DialogContent
+        showCloseButton={false}
+        className="liquid-glass liquid-glass-panel max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0 border-0"
+      >
+        <div className="flex flex-col">
+          {/* Header image */}
+          <div className="relative h-52 sm:h-56 w-full shrink-0 overflow-hidden rounded-t-lg">
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full h-full object-cover"
+              style={{ filter: "saturate(0.8)", objectPosition: project.imagePosition ?? "center" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-full liquid-glass-sm text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Fermer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="p-6 flex flex-col gap-6">
+          <DialogHeader className="gap-1.5">
             <span
               className="font-display text-primary"
-              style={{ fontSize: "0.75rem", letterSpacing: "0.1em" }}
+              style={{ fontSize: "0.72rem", letterSpacing: "0.12em" }}
             >
-              {CATEGORY_LABELS[project.category]}
+              {CATEGORY_LABELS[project.category].toUpperCase()}
             </span>
-          </div>
-        </div>
-
-        <div className="p-6 flex flex-col gap-6">
-          <DialogHeader className="gap-1">
             <DialogTitle
               className="font-display"
               style={{ fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.02em" }}
@@ -68,7 +70,7 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
           </DialogHeader>
 
           {/* Problem */}
-          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
+          <div className="p-4 rounded-xl liquid-glass liquid-glass-tint">
             <div className="flex items-center gap-2 mb-2">
               <ChevronRight size={14} className="text-primary" />
               <span
@@ -113,15 +115,6 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
             </div>
           </div>
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1.5">
-            {project.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="font-display" style={{ fontSize: "0.75rem" }}>
-                {tag}
-              </Badge>
-            ))}
-          </div>
-
           {/* Actions */}
           <div className="flex gap-3 pt-2 border-t border-border">
             <Button asChild className="flex-1 gap-2">
@@ -137,6 +130,7 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
               </a>
             </Button>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

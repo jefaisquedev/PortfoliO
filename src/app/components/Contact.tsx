@@ -1,40 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
-import { Send, Github, Linkedin, Mail, MapPin, CheckCircle2 } from "lucide-react";
-import { motion } from "motion/react";
-import { Button } from "./ui/button";
+import { motion, useAnimationControls } from "motion/react";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import "../../styles/Contact.css";
 
 type FormData = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  requestType: string;
   subject: string;
   message: string;
+  budget?: string;
 };
+
+const REQUEST_TYPES = [
+  "Mission freelance",
+  "Stage / Alternance",
+  "Collaboration",
+  "Autre",
+];
+
+const BUDGETS = ["< 1 000 €", "1 000 – 5 000 €", "> 5 000 €", "À discuter"];
+
+const SUBJECT_MAX = 80;
+const MESSAGE_MAX = 600;
 
 const SOCIALS = [
   {
-    icon: Github,
     label: "GitHub",
     value: "github.com/jefaisquedev",
     href: "https://github.com/jefaisquedev",
   },
   {
-    icon: Linkedin,
     label: "LinkedIn",
     value: "linkedin.com/in/malcomo",
     href: "https://linkedin.com/in/malcomo",
   },
   {
-    icon: Mail,
     label: "Email",
     value: "owimomo27@gmail.com",
     href: "mailto:owimomo27@gmail.com",
   },
   {
-    icon: MapPin,
     label: "Localisation",
     value: "Bruxelles, Belgique",
     href: null,
@@ -48,27 +59,172 @@ const fadeUp = {
   transition: { duration: 0.5, ease: "easeOut" },
 };
 
+const fieldError = "text-destructive text-xs mt-1";
+
+function TerminalShell({
+  title = "contact — zsh",
+  children,
+}: {
+  title?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="contact-terminal">
+      <div className="liquid-glass liquid-glass-panel rounded-xl overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-3 liquid-glass-bar">
+          <span className="size-3 rounded-full bg-red-400/80" />
+          <span className="size-3 rounded-full bg-yellow-400/80" />
+          <span className="size-3 rounded-full bg-green-400/80" />
+          <span
+            className="ml-auto font-display text-muted-foreground"
+            style={{ fontSize: "0.75rem" }}
+          >
+            {title}
+          </span>
+        </div>
+        <div className="terminal-body">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function FormField({
+  label,
+  htmlFor,
+  required,
+  optional,
+  error,
+  counter,
+  children,
+}: {
+  label: string;
+  htmlFor?: string;
+  required?: boolean;
+  optional?: boolean;
+  error?: string;
+  counter?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="contact-form-field">
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor={htmlFor} className="contact-form-label">
+          {label}
+          {required && <span className="text-primary"> *</span>}
+          {optional && (
+            <span className="text-muted-foreground font-normal"> (optionnel)</span>
+          )}
+        </Label>
+        {counter}
+      </div>
+      {children}
+      {error && <p className={fieldError}>{error}</p>}
+    </div>
+  );
+}
+
+function TerminalInfoSidebar() {
+  return (
+    <TerminalShell title="info — zsh">
+      <div className="terminal-output-line mb-2">
+        <span className="terminal-chevron">❯</span>
+        <span className="text-foreground">./whoami --links</span>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        {SOCIALS.map(({ label, value, href }) => (
+          <div key={label} className="terminal-info-row">
+            <span className="terminal-chevron">❯</span>
+            <span className="terminal-info-key">{label.toLowerCase()}</span>
+            {href ? (
+              <a
+                href={href}
+                target={href.startsWith("http") ? "_blank" : undefined}
+                rel="noopener noreferrer"
+                className="terminal-link"
+              >
+                {value}
+              </a>
+            ) : (
+              <span className="terminal-output-text">{value}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="terminal-divider" />
+
+      <p className="terminal-comment"># disponibilité</p>
+      <div className="terminal-output-line mt-2">
+        <span className="terminal-chevron select-none opacity-0">❯</span>
+        <span className="terminal-output-text text-xs" style={{ lineHeight: 1.6 }}>
+          Toujours prêt à apprendre et à s'exercer !
+        </span>
+      </div>
+    </TerminalShell>
+  );
+}
+
 export function Contact() {
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    setValue,
+    watch,
     reset,
-  } = useForm<FormData>();
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: { requestType: "", budget: "" },
+  });
+
+  const requestType = watch("requestType");
+  const budget = watch("budget");
+  const subjectValue = watch("subject") ?? "";
+  const messageValue = watch("message") ?? "";
+
+  const subjectRemaining = SUBJECT_MAX - subjectValue.length;
+  const subjectWarning = subjectRemaining <= 20;
+  const subjectControls = useAnimationControls();
+
+  const messageRemaining = MESSAGE_MAX - messageValue.length;
+  const messageWarning = messageRemaining <= 20;
+  const messageControls = useAnimationControls();
+
+  useEffect(() => {
+    if (!subjectWarning) return;
+    subjectControls.start({
+      x: [0, -4, 4, -3, 3, 0],
+      transition: { duration: 0.3, ease: "easeInOut" },
+    });
+  }, [subjectValue, subjectWarning, subjectControls]);
+
+  useEffect(() => {
+    if (!messageWarning) return;
+    messageControls.start({
+      x: [0, -4, 4, -3, 3, 0],
+      transition: { duration: 0.3, ease: "easeInOut" },
+    });
+  }, [messageValue, messageWarning, messageControls]);
 
   const onSubmit = async (data: FormData) => {
-    await new Promise((r) => setTimeout(r, 1400));
+    setSubmitting(true);
+    await new Promise((r) => setTimeout(r, 1300));
     console.log("Contact form:", data);
+    setSubmitting(false);
     setSent(true);
-    reset();
-    setTimeout(() => setSent(false), 5000);
+  };
+
+  const resetForm = () => {
+    reset({ requestType: "", budget: "" });
+    setSent(false);
   };
 
   return (
-    <section id="contact" className="py-24 sm:py-32 bg-secondary/30">
+    <section id="contact" className="py-16 sm:py-20 bg-secondary/30">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <motion.div {...fadeUp} className="mb-16">
+        <motion.div {...fadeUp} className="mb-8">
           <span
             className="font-display text-primary"
             style={{ fontSize: "0.8rem", letterSpacing: "0.15em" }}
@@ -85,53 +241,76 @@ export function Contact() {
           >
             Travaillons ensemble
           </h2>
-          <p className="text-muted-foreground mt-3 max-w-lg" style={{ lineHeight: 1.7 }}>
-            Vous avez un projet web, une mission freelance ou une opportunité de stage ?
-            N'hésitez pas à me contacter, je réponds sous 24h.
+          <p className="text-muted-foreground mt-2 max-w-lg text-sm" style={{ lineHeight: 1.6 }}>
+            Décrivez votre demande — réponse sous 24h.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          {/* Form */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
           <motion.div
             {...fadeUp}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-3"
           >
             {sent ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center gap-4 py-16 text-center"
-              >
-                <CheckCircle2 size={48} className="text-primary" />
-                <h3 className="font-display" style={{ fontSize: "1.2rem", fontWeight: 600 }}>
-                  Message envoyé !
-                </h3>
-                <p className="text-muted-foreground" style={{ fontSize: "0.9rem" }}>
+              <TerminalShell title="message — contact">
+                <p className="text-foreground font-medium mb-2">Message envoyé !</p>
+                <p className="text-muted-foreground" style={{ fontSize: "0.9rem", lineHeight: 1.6 }}>
                   Merci pour votre message. Je vous répondrai dans les plus brefs délais.
                 </p>
-              </motion.div>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="mt-5 text-sm text-primary hover:underline"
+                >
+                  Envoyer un autre message
+                </button>
+              </TerminalShell>
             ) : (
-              <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="name">Nom complet</Label>
-                    <Input
-                      id="name"
-                      placeholder="jean Dupont"
-                      aria-invalid={!!errors.name}
-                      {...register("name", { required: "Nom requis" })}
-                      className={errors.name ? "border-destructive focus-visible:ring-destructive/30" : ""}
-                    />
-                    {errors.name && (
-                      <p className="text-destructive" style={{ fontSize: "0.78rem" }}>
-                        {errors.name.message}
-                      </p>
-                    )}
+              <TerminalShell title="message — contact">
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="contact-form-simple flex flex-col gap-3"
+                  noValidate
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <FormField
+                      label="Prénom"
+                      htmlFor="firstName"
+                      required
+                      error={errors.firstName?.message}
+                    >
+                      <Input
+                        id="firstName"
+                        placeholder="Jean"
+                        aria-invalid={!!errors.firstName}
+                        {...register("firstName", { required: "Prénom requis" })}
+                        className={errors.firstName ? "border-destructive" : ""}
+                      />
+                    </FormField>
+                    <FormField
+                      label="Nom"
+                      htmlFor="lastName"
+                      required
+                      error={errors.lastName?.message}
+                    >
+                      <Input
+                        id="lastName"
+                        placeholder="Dupont"
+                        aria-invalid={!!errors.lastName}
+                        {...register("lastName", { required: "Nom requis" })}
+                        className={errors.lastName ? "border-destructive" : ""}
+                      />
+                    </FormField>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="email">Email</Label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <FormField
+                    label="Email"
+                    htmlFor="email"
+                    required
+                    error={errors.email?.message}
+                  >
                     <Input
                       id="email"
                       type="email"
@@ -144,135 +323,141 @@ export function Contact() {
                           message: "Email invalide",
                         },
                       })}
-                      className={errors.email ? "border-destructive focus-visible:ring-destructive/30" : ""}
+                      className={errors.email ? "border-destructive" : ""}
                     />
-                    {errors.email && (
-                      <p className="text-destructive" style={{ fontSize: "0.78rem" }}>
-                        {errors.email.message}
-                      </p>
-                    )}
+                  </FormField>
+
+                  <FormField
+                    label="Sujet"
+                    htmlFor="subject"
+                    required
+                    error={errors.subject?.message}
+                    counter={
+                      <motion.span
+                        animate={subjectControls}
+                        className={`text-xs tabular-nums ${
+                          subjectWarning ? "text-destructive font-medium" : "text-muted-foreground"
+                        }`}
+                      >
+                        {subjectRemaining}
+                      </motion.span>
+                    }
+                  >
+                    <Input
+                      id="subject"
+                      placeholder="Site e-commerce, API REST..."
+                      maxLength={SUBJECT_MAX}
+                      aria-invalid={!!errors.subject}
+                      {...register("subject", {
+                        required: "Sujet requis",
+                        maxLength: {
+                          value: SUBJECT_MAX,
+                          message: `Sujet trop long (${SUBJECT_MAX} caractères max.)`,
+                        },
+                      })}
+                      className={errors.subject ? "border-destructive" : ""}
+                    />
+                  </FormField>
                   </div>
-                </div>
 
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="subject">Sujet</Label>
-                  <Input
-                    id="subject"
-                    placeholder="Mission freelance — Site e-commerce"
-                    aria-invalid={!!errors.subject}
-                    {...register("subject", { required: "Sujet requis" })}
-                    className={errors.subject ? "border-destructive focus-visible:ring-destructive/30" : ""}
-                  />
-                  {errors.subject && (
-                    <p className="text-destructive" style={{ fontSize: "0.78rem" }}>
-                      {errors.subject.message}
-                    </p>
-                  )}
-                </div>
+                  <FormField label="Type de demande" required error={errors.requestType?.message}>
+                    <input
+                      type="hidden"
+                      {...register("requestType", { required: "Sélectionnez un type de demande" })}
+                    />
+                    <div className="contact-form-options">
+                      {REQUEST_TYPES.map((type) => {
+                        const active = requestType === type;
+                        return (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => setValue("requestType", type, { shouldValidate: true })}
+                            className={`contact-form-option liquid-glass-sm${active ? " contact-form-option--active" : ""}`}
+                          >
+                            {type}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </FormField>
 
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Décrivez votre projet, vos besoins, votre budget approximatif..."
-                    rows={5}
-                    aria-invalid={!!errors.message}
-                    {...register("message", {
-                      required: "Message requis",
-                      minLength: { value: 20, message: "Message trop court (20 caractères min.)" },
-                    })}
-                    className={errors.message ? "border-destructive focus-visible:ring-destructive/30" : ""}
-                  />
-                  {errors.message && (
-                    <p className="text-destructive" style={{ fontSize: "0.78rem" }}>
-                      {errors.message.message}
-                    </p>
-                  )}
-                </div>
+                  <FormField
+                    label="Message"
+                    htmlFor="message"
+                    required
+                    error={errors.message?.message}
+                    counter={
+                      <motion.span
+                        animate={messageControls}
+                        className={`text-xs tabular-nums ${
+                          messageWarning ? "text-destructive font-medium" : "text-muted-foreground"
+                        }`}
+                      >
+                        {messageRemaining}
+                      </motion.span>
+                    }
+                  >
+                    <Textarea
+                      id="message"
+                      placeholder="Votre projet, besoins, délais..."
+                      rows={3}
+                      maxLength={MESSAGE_MAX}
+                      aria-invalid={!!errors.message}
+                      {...register("message", {
+                        required: "Message requis",
+                        minLength: {
+                          value: 20,
+                          message: "Message trop court (20 caractères min.)",
+                        },
+                        maxLength: {
+                          value: MESSAGE_MAX,
+                          message: `Message trop long (${MESSAGE_MAX} caractères max.)`,
+                        },
+                      })}
+                      className={errors.message ? "border-destructive" : ""}
+                    />
+                  </FormField>
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={isSubmitting}
-                  className="gap-2 self-start"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Envoi en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Send size={15} />
-                      Envoyer le message
-                    </>
-                  )}
-                </Button>
-              </form>
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+                  <FormField label="Budget estimé" optional>
+                    <input type="hidden" {...register("budget")} />
+                    <div className="contact-form-options">
+                      {BUDGETS.map((b) => {
+                        const active = budget === b;
+                        return (
+                          <button
+                            key={b}
+                            type="button"
+                            onClick={() =>
+                              setValue("budget", active ? "" : b, { shouldValidate: false })
+                            }
+                            className={`contact-form-option liquid-glass-sm contact-form-option--chip${
+                              active ? " contact-form-option--active" : ""
+                            }`}
+                          >
+                            {b}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </FormField>
+
+                  <Button type="submit" className="w-full sm:w-auto shrink-0" disabled={submitting}>
+                    {submitting ? "Envoi..." : "Envoyer"}
+                  </Button>
+                  </div>
+                </form>
+              </TerminalShell>
             )}
           </motion.div>
 
-          {/* Contact info */}
           <motion.div
             {...fadeUp}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-2 flex flex-col gap-6"
+            className="lg:col-span-2"
           >
-            <div
-              className="p-5 rounded-xl border border-border bg-card"
-            >
-              <h3
-                className="font-display mb-5"
-                style={{ fontSize: "1rem", fontWeight: 600, letterSpacing: "-0.01em" }}
-              >
-                Me retrouver
-              </h3>
-              <div className="flex flex-col gap-4">
-                {SOCIALS.map(({ icon: Icon, label, value, href }) => (
-                  <div key={label} className="flex items-start gap-3">
-                    <div className="size-9 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                      <Icon size={16} className="text-primary" />
-                    </div>
-                    <div>
-                      <p
-                        className="text-muted-foreground"
-                        style={{ fontSize: "0.75rem", marginBottom: "2px" }}
-                      >
-                        {label}
-                      </p>
-                      {href ? (
-                        <a
-                          href={href}
-                          target={href.startsWith("http") ? "_blank" : undefined}
-                          rel="noopener noreferrer"
-                          className="text-foreground hover:text-primary transition-colors"
-                          style={{ fontSize: "0.88rem", fontWeight: 500 }}
-                        >
-                          {value}
-                        </a>
-                      ) : (
-                        <span className="text-foreground" style={{ fontSize: "0.88rem", fontWeight: 500 }}>
-                          {value}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-5 rounded-xl border border-primary/20 bg-primary/5">
-              <p
-                className="font-display text-primary"
-                style={{ fontSize: "0.8rem", letterSpacing: "0.05em", fontWeight: 600 }}
-              >
-                DISPONIBILITÉ
-              </p>
-              <p className="text-muted-foreground mt-2" style={{ fontSize: "0.85rem", lineHeight: 1.7 }}>
-                Disponible pour des missions freelance dès maintenant, et ouvert à un
-                stage ou une alternance à partir de <strong className="text-foreground">janvier 2027</strong>.
-              </p>
-            </div>
+            <TerminalInfoSidebar />
           </motion.div>
         </div>
       </div>

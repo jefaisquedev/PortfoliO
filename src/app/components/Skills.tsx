@@ -24,10 +24,9 @@ function SkillCard({ skill, index }: { skill: string; index: number }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.25, delay: index * 0.05 }}
       ref={ref}
-      className="group relative flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200 cursor-default"
+      className="group relative liquid-glass liquid-glass-interactive flex items-center gap-3 px-4 py-3 rounded-xl cursor-default overflow-hidden"
       style={{
-        background: `linear-gradient(135deg, var(--card) 0%, var(--card) 100%), radial-gradient(circle at ${mouse.x}px ${mouse.y}px, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 30%)`,
-        backgroundBlendMode: "overlay",
+        background: `radial-gradient(circle at ${mouse.x}px ${mouse.y}px, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 35%), color-mix(in oklch, var(--card) 42%, transparent)`,
       }}
     >
       {/* colored dot */}
@@ -48,10 +47,9 @@ function StatCard({ value, label }: { value: string; label: string }) {
   return (
     <div
       ref={ref}
-      className="text-center p-5 rounded-xl border border-border bg-card"
+      className="relative liquid-glass text-center p-5 rounded-xl overflow-hidden"
       style={{
-        background: `linear-gradient(135deg, var(--card) 0%, var(--card) 100%), radial-gradient(circle at ${mouse.x}px ${mouse.y}px, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 30%)`,
-        backgroundBlendMode: "overlay",
+        background: `radial-gradient(circle at ${mouse.x}px ${mouse.y}px, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 35%), color-mix(in oklch, var(--card) 42%, transparent)`,
       }}
     >
       <div
@@ -116,7 +114,7 @@ export function Skills() {
                   <TabsTrigger
                     key={cat.name}
                     value={cat.name}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg liquid-glass-sm border data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:backdrop-blur-none"
                     style={{ fontSize: "0.85rem" }}
                   >
                     <Icon size={15} />

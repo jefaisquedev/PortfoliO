@@ -10,8 +10,6 @@ import { Footer } from "./components/Footer";
 import type { Project } from "./data";
 
 export default function App() {
-  {/* MARKER-MAKE-KIT-INVOKED */}
-  {/* MARKER-MAKE-KIT-DISCOVERY-READ */}
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   return (
