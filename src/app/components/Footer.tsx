@@ -31,7 +31,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-muted-foreground" style={{ fontSize: "0.85rem", lineHeight: 1.7 }}>
-              Développeur Full-Stack — Bachelor Informatique 3ème année.
+              Développeur Full-Stack — Bachelier Informatique 3ème année.
               Disponible pour missions freelance et stage.
             </p>
           </div>

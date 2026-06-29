@@ -1,0 +1,160 @@
+.tech-orbit {
+  position: relative;
+  width: clamp(300px, 82vw, 540px);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+
+.orbit-ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 9999px;
+  border: 1px dashed color-mix(in oklch, var(--primary) 16%, transparent);
+  animation: orbit-spin var(--orbit-duration, 40s) linear infinite;
+  animation-direction: var(--orbit-direction, normal);
+  /* The ring boxes overlap each other and the center. Without this, a larger
+     ring's transparent box would intercept hover events meant for icons on
+     inner rings, so their tooltips would never appear. */
+  pointer-events: none;
+}
+
+.orbit-icon {
+  pointer-events: auto;
+}
+
+.tech-orbit:hover .orbit-ring,
+.tech-orbit:hover .orbit-spin {
+  animation-play-state: paused;
+}
+
+/* Lift the ring (and its label) that contains the hovered icon above the
+   other rings and the central core, so every tooltip stays visible. */
+.orbit-ring:has(.orbit-spin:hover) {
+  z-index: 30;
+}
+
+.orbit-icon {
+  position: absolute;
+  width: clamp(36px, 9vw, 48px);
+  height: clamp(36px, 9vw, 48px);
+  transform: translate(-50%, -50%);
+}
+
+.orbit-spin {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: orbit-spin var(--orbit-duration, 40s) linear infinite;
+  animation-direction: var(--orbit-icon-direction, reverse);
+}
+
+.orbit-glass {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  cursor: default;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.orbit-spin:hover .orbit-glass {
+  transform: scale(1.3);
+  z-index: 5;
+  border-color: color-mix(in oklch, var(--primary) 55%, transparent) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 40%, transparent),
+    0 8px 26px color-mix(in oklch, black 35%, transparent);
+}
+
+.orbit-label {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  z-index: 40;
+  transform: translateX(-50%) translateY(4px);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--card) 92%, transparent);
+  border: 1px solid color-mix(in oklch, white 12%, transparent);
+  box-shadow: 0 6px 18px color-mix(in oklch, black 35%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.orbit-spin:hover .orbit-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.orbit-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(78px, 20vw, 116px);
+  height: clamp(78px, 20vw, 116px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 9999px;
+  text-align: center;
+  background: radial-gradient(
+    circle at 50% 35%,
+    color-mix(in oklch, var(--primary) 32%, transparent),
+    color-mix(in oklch, var(--card) 70%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, white 18%, transparent),
+    0 0 30px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+.orbit-core::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
+  animation: orbit-core-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-core-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.1;
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring,
+  .orbit-spin,
+  .orbit-core::after {
+    animation: none;
+  }
+}

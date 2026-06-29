@@ -56,7 +56,7 @@ const fadeUp = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.5, ease: "easeOut" },
+  transition: { duration: 0.5, ease: "easeOut" as const },
 };
 
 const fieldError = "text-destructive text-xs mt-1";
@@ -167,14 +167,14 @@ function TerminalInfoSidebar() {
 
 export function Contact() {
   const [sent, setSent] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     reset,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: { requestType: "", budget: "" },
   });
@@ -209,11 +209,16 @@ export function Contact() {
   }, [messageValue, messageWarning, messageControls]);
 
   const onSubmit = async (data: FormData) => {
-    setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1300));
-    console.log("Contact form:", data);
-    setSubmitting(false);
-    setSent(true);
+    try {
+      await new Promise((r) => setTimeout(r, 1300));
+      console.log("Contact form:", data);
+      setSent(true);
+    } catch {
+      setError("root.serverError", {
+        type: "submit",
+        message: "L'envoi a échoué. Réessayez ou contactez-moi par email.",
+      });
+    }
   };
 
   const resetForm = () => {
@@ -273,6 +278,11 @@ export function Contact() {
                   className="contact-form-simple flex flex-col gap-3"
                   noValidate
                 >
+                  {errors.root?.serverError && (
+                    <p role="alert" className={fieldError}>
+                      {errors.root.serverError.message}
+                    </p>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <FormField
                       label="Prénom"
@@ -443,8 +453,8 @@ export function Contact() {
                     </div>
                   </FormField>
 
-                  <Button type="submit" className="w-full sm:w-auto shrink-0" disabled={submitting}>
-                    {submitting ? "Envoi..." : "Envoyer"}
+                  <Button type="submit" className="w-full sm:w-auto shrink-0" disabled={isSubmitting}>
+                    {isSubmitting ? "Envoi..." : "Envoyer"}
                   </Button>
                   </div>
                 </form>

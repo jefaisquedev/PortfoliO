@@ -15,21 +15,13 @@ type ProjectModalProps = {
   onClose: () => void;
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  Web: "Application Web",
-  API: "API / Backend",
-  Mobile: "Application Mobile",
-  CLI: "Outil CLI",
-};
-
 export function ProjectModal({ project, onClose }: ProjectModalProps) {
-  if (!project) return null;
-
   return (
     <Dialog open={!!project} onOpenChange={(open) => !open && onClose()}>
+      {project && (
       <DialogContent
         showCloseButton={false}
-        className="liquid-glass liquid-glass-panel max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0 border-0"
+        className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-card border border-border"
       >
         <div className="flex flex-col">
           {/* Header image */}
@@ -37,6 +29,8 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
             <img
               src={project.image}
               alt={project.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
               style={{ filter: "saturate(0.8)", objectPosition: project.imagePosition ?? "center" }}
             />
@@ -52,12 +46,6 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
 
           <div className="p-6 flex flex-col gap-6">
           <DialogHeader className="gap-1.5">
-            <span
-              className="font-display text-primary"
-              style={{ fontSize: "0.72rem", letterSpacing: "0.12em" }}
-            >
-              {CATEGORY_LABELS[project.category].toUpperCase()}
-            </span>
             <DialogTitle
               className="font-display"
               style={{ fontSize: "1.4rem", fontWeight: 700, letterSpacing: "-0.02em" }}
@@ -117,22 +105,37 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
 
           {/* Actions */}
           <div className="flex gap-3 pt-2 border-t border-border">
-            <Button asChild className="flex-1 gap-2">
-              <a href={project.demo} target="_blank" rel="noopener noreferrer">
+            {project.demo !== "#" ? (
+              <Button asChild className="flex-1 gap-2">
+                <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink size={15} />
+                  Voir la démo
+                </a>
+              </Button>
+            ) : (
+              <Button className="flex-1 gap-2" disabled>
                 <ExternalLink size={15} />
-                Voir la démo
-              </a>
-            </Button>
-            <Button variant="outline" asChild className="flex-1 gap-2">
-              <a href={project.github} target="_blank" rel="noopener noreferrer">
+                Démo indisponible
+              </Button>
+            )}
+            {project.github !== "#" ? (
+              <Button variant="outline" asChild className="flex-1 gap-2">
+                <a href={project.github} target="_blank" rel="noopener noreferrer">
+                  <Github size={15} />
+                  Code source
+                </a>
+              </Button>
+            ) : (
+              <Button variant="outline" className="flex-1 gap-2" disabled>
                 <Github size={15} />
-                Code source
-              </a>
-            </Button>
+                Code privé
+              </Button>
+            )}
           </div>
         </div>
         </div>
       </DialogContent>
+      )}
     </Dialog>
   );
 }

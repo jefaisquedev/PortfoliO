@@ -315,7 +315,7 @@ export const LogoLoop = memo(function LogoLoop({
           href={item.href}
           aria-label={itemAriaLabel || "logo link"}
           target="_blank"
-          rel="noreferrer noopener"
+          rel="noopener noreferrer"
         >
           {content}
         </a>

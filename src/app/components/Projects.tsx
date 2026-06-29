@@ -1,6 +1,13 @@
-import { useMemo, useCallback, type MouseEvent } from "react";
+import { useMemo, useCallback, useRef, type MouseEvent, type PointerEvent } from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import { motion } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useMotionTemplate,
+  useReducedMotion,
+} from "motion/react";
 import { projects, type Project } from "../data";
 import { LogoLoop, type LogoItem } from "./LogoLoop";
 
@@ -12,15 +19,7 @@ const fadeUp = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.5, ease: "easeOut" },
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  Web: "text-blue-400 border-blue-400/35",
-  API: "text-emerald-400 border-emerald-400/35",
-  Mobile: "text-purple-400 border-purple-400/35",
-  CLI: "text-orange-400 border-orange-400/35",
-  Application: "text-amber-400 border-amber-400/35",
+  transition: { duration: 0.5, ease: "easeOut" as const },
 };
 
 function projectUrl(project: Project): string | undefined {
@@ -31,21 +30,65 @@ function projectUrl(project: Project): string | undefined {
 
 function LoopProjectCard({ project, onOpen }: { project: Project; onOpen: () => void }) {
   const url = projectUrl(project);
+  const reduceMotion = useReducedMotion();
+  const cardRef = useRef<HTMLElement>(null);
+
+  const px = useMotionValue(0.5);
+  const py = useMotionValue(0.5);
+
+  const springConfig = { stiffness: 220, damping: 22, mass: 0.4 };
+  const rotateX = useSpring(useTransform(py, [0, 1], [9, -9]), springConfig);
+  const rotateY = useSpring(useTransform(px, [0, 1], [-9, 9]), springConfig);
+  const glowOpacity = useSpring(0, { stiffness: 180, damping: 28 });
+
+  const glowX = useTransform(px, (v) => `${v * 100}%`);
+  const glowY = useTransform(py, (v) => `${v * 100}%`);
+  const glowBackground = useMotionTemplate`radial-gradient(circle at ${glowX} ${glowY}, color-mix(in oklch, var(--primary) 18%, transparent), transparent 55%)`;
+
+  const handlePointerMove = (e: PointerEvent<HTMLElement>) => {
+    if (reduceMotion || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    px.set((e.clientX - rect.left) / rect.width);
+    py.set((e.clientY - rect.top) / rect.height);
+    glowOpacity.set(1);
+  };
+
+  const handlePointerLeave = () => {
+    px.set(0.5);
+    py.set(0.5);
+    glowOpacity.set(0);
+  };
 
   const handleOpenDetails = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     e.stopPropagation();
     onOpen();
   };
 
   return (
-    <article
-      className="group relative flex flex-col w-[300px] h-[340px] max-w-[82vw] liquid-glass liquid-glass-panel liquid-glass-interactive rounded-2xl overflow-hidden text-left"
+    <div style={{ perspective: 900 }}>
+    <motion.article
+      ref={cardRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      whileHover={reduceMotion ? undefined : { scale: 1.03 }}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
+      style={reduceMotion ? undefined : { rotateX, rotateY }}
+      className="group relative flex flex-col w-[300px] h-[340px] max-w-[82vw] liquid-glass liquid-glass-panel liquid-glass-interactive rounded-2xl overflow-hidden text-left will-change-transform"
     >
-      {/* ── Visuel ── */}
+      {!reduceMotion && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[2] rounded-2xl"
+          style={{ background: glowBackground, opacity: glowOpacity }}
+        />
+      )}
       <div className="relative shrink-0 overflow-hidden border-b border-border" style={{ aspectRatio: "16/9" }}>
         <img
           src={project.image}
           alt={project.title}
+          loading="lazy"
+          decoding="async"
           className="transition-transform duration-500 group-hover:scale-105"
           style={{
             width: "100%",
@@ -56,20 +99,13 @@ function LoopProjectCard({ project, onOpen }: { project: Project; onOpen: () => 
           }}
           draggable={false}
         />
-        <div className="absolute top-3 left-3">
-          <span
-            className={`liquid-glass-sm inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-display font-medium ${CATEGORY_COLORS[project.category] ?? CATEGORY_COLORS.Web}`}
-          >
-            {project.category}
-          </span>
-        </div>
         {url && (
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="absolute top-3 right-3 p-1.5 rounded-full liquid-glass-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute top-3 right-3 z-10 p-1.5 rounded-full liquid-glass-sm text-muted-foreground hover:text-foreground transition-colors"
             aria-label={`Ouvrir ${project.title} dans un nouvel onglet`}
           >
             <ExternalLink size={14} />
@@ -77,7 +113,6 @@ function LoopProjectCard({ project, onOpen }: { project: Project; onOpen: () => 
         )}
       </div>
 
-      {/* ── Identité ── */}
       <div className="flex flex-col gap-1 px-5 pt-4 pb-3 border-b border-border min-h-[5.5rem]">
         <h3
           className="font-display line-clamp-1"
@@ -93,17 +128,17 @@ function LoopProjectCard({ project, onOpen }: { project: Project; onOpen: () => 
         </p>
       </div>
 
-      {/* ── Action ── */}
       <button
         type="button"
         onClick={handleOpenDetails}
-        className="mt-auto flex items-center justify-between gap-2 px-5 py-4 w-full font-display text-primary hover:bg-primary/5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
+        className="relative z-10 mt-auto flex items-center justify-between gap-2 px-5 py-4 w-full font-display text-primary hover:bg-primary/5 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50"
         style={{ fontSize: "0.82rem", letterSpacing: "0.04em" }}
       >
         <span>Lire plus</span>
         <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
       </button>
-    </article>
+    </motion.article>
+    </div>
   );
 }
 
@@ -148,7 +183,6 @@ export function Projects({ onSelectProject }: ProjectsProps) {
         </motion.div>
       </div>
 
-      {/* Looping carousel — full-bleed so cards scroll edge to edge */}
       <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.15 }}>
         <LogoLoop
           logos={logos}

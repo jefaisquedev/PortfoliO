@@ -39,7 +39,7 @@ const fadeUp = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.5, ease: "easeOut" },
+  transition: { duration: 0.5, ease: "easeOut" as const },
 };
 
 const contentVariants: Variants = {
@@ -246,7 +246,7 @@ export function About() {
               Parcours
             </h3>
             <p className="text-muted-foreground" style={{ fontSize: "0.8rem" }}>
-              Survolez une carte pour révéler chaque étape.
+              Pour en savoir plus, survolez chaque carte.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
