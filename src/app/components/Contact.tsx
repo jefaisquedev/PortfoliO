@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { motion, useAnimationControls } from "motion/react";
+import emailjs from "@emailjs/browser";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
@@ -29,6 +30,10 @@ const BUDGETS = ["< 1 000 €", "1 000 – 5 000 €", "> 5 000 €", "À discut
 
 const SUBJECT_MAX = 80;
 const MESSAGE_MAX = 600;
+
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
 const SOCIALS = [
   {
@@ -212,31 +217,37 @@ export function Contact() {
   const onSubmit = async (data: FormData) => {
     if (data._honeypot) return;
 
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      setError("root.serverError", {
+        type: "config",
+        message:
+          "Formulaire non configuré. Ajoutez les variables VITE_EMAILJS_* (voir .env.example).",
       });
+      return;
+    }
 
-      const result = (await response.json().catch(() => ({}))) as { error?: string };
-
-      if (!response.ok) {
-        setError("root.serverError", {
-          type: "submit",
-          message:
-            result.error ??
-            "L'envoi a échoué. Réessayez ou contactez-moi directement par email.",
-        });
-        return;
-      }
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: `${data.firstName} ${data.lastName}`,
+          from_email: data.email,
+          reply_to: data.email,
+          request_type: data.requestType,
+          subject: data.subject,
+          message: data.message,
+          budget: data.budget?.trim() || "Non précisé",
+        },
+        { publicKey: EMAILJS_PUBLIC_KEY },
+      );
 
       setSent(true);
     } catch {
       setError("root.serverError", {
         type: "submit",
         message:
-          "Connexion impossible. Réessayez ou contactez-moi directement par email.",
+          "L'envoi a échoué. Réessayez ou contactez-moi directement par email.",
       });
     }
   };
