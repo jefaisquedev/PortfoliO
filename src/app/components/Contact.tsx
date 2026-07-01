@@ -15,6 +15,7 @@ type FormData = {
   subject: string;
   message: string;
   budget?: string;
+  _honeypot?: string;
 };
 
 const REQUEST_TYPES = [
@@ -209,14 +210,33 @@ export function Contact() {
   }, [messageValue, messageWarning, messageControls]);
 
   const onSubmit = async (data: FormData) => {
+    if (data._honeypot) return;
+
     try {
-      await new Promise((r) => setTimeout(r, 1300));
-      console.log("Contact form:", data);
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setError("root.serverError", {
+          type: "submit",
+          message:
+            result.error ??
+            "L'envoi a échoué. Réessayez ou contactez-moi directement par email.",
+        });
+        return;
+      }
+
       setSent(true);
     } catch {
       setError("root.serverError", {
         type: "submit",
-        message: "L'envoi a échoué. Réessayez ou contactez-moi par email.",
+        message:
+          "Connexion impossible. Réessayez ou contactez-moi directement par email.",
       });
     }
   };
@@ -278,6 +298,14 @@ export function Contact() {
                   className="contact-form-simple flex flex-col gap-3"
                   noValidate
                 >
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    className="sr-only"
+                    aria-hidden
+                    {...register("_honeypot")}
+                  />
                   {errors.root?.serverError && (
                     <p role="alert" className={fieldError}>
                       {errors.root.serverError.message}
